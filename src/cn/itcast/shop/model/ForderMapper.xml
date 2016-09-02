@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="cn.itcast.shop.model.Forder">
+
+	<resultMap id="baseResultMap" type="forder">
+		<id column="f_id" property="id" jdbcType="INTEGER" />
+		<result column="f_name" property="name" jdbcType="VARCHAR" />
+		<result column="phone" property="phone" jdbcType="VARCHAR" />
+		<result column="detail" property="detail" jdbcType="VARCHAR" />
+		<result column="date" property="date" jdbcType="TIMESTAMP" />
+		<result column="total" property="total" jdbcType="DECIMAL" />
+		<result column="post" property="post" jdbcType="VARCHAR" />
+		<result column="address" property="address" jdbcType="VARCHAR" />
+	</resultMap>
+	
+	<insert id="insert" parameterType="forder" useGeneratedKeys="true" keyProperty="id">
+		insert into forder (f_name,phone,detail,total,post,address,uid) values (#{name},#{phone},#{detail},#{total},#{post},#{address},#{user.id})
+	</insert>
+	
+	<!-- 更新订单信息,支持根据属性动态更新 -->
+	<update id="update" parameterType="forder">
+		update forder
+		<set>
+		   <if test="name!=null">
+		   	    f_name=#{name},
+		   </if>
+		   <if test="phone!=null">
+		   	    phone=#{phone},
+		   </if>
+		   <if test="detail!=null">
+		   	    detail=#{detail},
+		   </if>
+		   <if test="name!=null">
+		   	    post=#{post},
+		   </if>
+		   <if test="name!=null">
+		   	    address=#{address},
+		   </if>
+		   <if test="status!=null and status.id!=null">
+		   	    sid=#{status.id},
+		   </if>
+		   <if test="user!=null and user.id!=null">
+		   	    uid=#{user.id},
+		   </if>
+		</set>
+		where f_id=#{id}
+	</update>
+</mapper>

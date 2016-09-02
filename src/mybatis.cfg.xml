@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE configuration
+PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-config.dtd">
+<configuration>
+    <!-- 1: 开启二级缓存 -->
+    <settings>
+    	<setting name="cacheEnabled" value="true"/>
+    </settings>
+
+	<typeAliases>
+	    <!-- 可以注册指定包的别名, 默认是类简单名称第一个字母小写 -->
+		<package name="cn.itcast.shop.model"/>
+	</typeAliases>	
+	
+	<typeHandlers>
+		<typeHandler handler="cn.itcast.shop.util.DateTypeHandler" javaType="String" jdbcType="TIMESTAMP"/>
+	</typeHandlers>
+	
+	<mappers>
+		<mapper resource="cn/itcast/shop/model/CategoryMapper.xml"  />
+		<mapper resource="cn/itcast/shop/model/AccountMapper.xml"  />
+		<mapper resource="cn/itcast/shop/model/ProductMapper.xml"  />
+		<mapper resource="cn/itcast/shop/model/ForderMapper.xml"  />
+		<mapper resource="cn/itcast/shop/model/SorderMapper.xml"  />
+		<mapper resource="cn/itcast/shop/model/UserMapper.xml"  />
+		<mapper resource="cn/itcast/shop/model/StatusMapper.xml"  />
+		<mapper resource="cn/itcast/shop/model/UrlMapper.xml"  />
+		<mapper resource="cn/itcast/shop/model/RoleMapper.xml"  />
+		<mapper resource="cn/itcast/shop/model/PermissionMapper.xml"  />
+	</mappers>
+	
+</configuration>

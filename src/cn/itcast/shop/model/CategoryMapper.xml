@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.itcast.shop.model.Category">
+ 
+  <!-- 可以指定第三方缓存实现类, 支持Spring与MyBatis整合使用 -->
+  <cache type="org.mybatis.caches.ehcache.LoggingEhcache" />
+ 
+  <resultMap id="baseResultMap" type="category">
+	    <id column="c_id" jdbcType="INTEGER" property="id" />
+	    <result column="type" jdbcType="VARCHAR" property="type" />
+	    <result column="hot" jdbcType="BIT" property="hot" />
+  </resultMap>
+  
+  <resultMap type="category" id="categoryMap" extends="baseResultMap">
+  		<!-- 类别与管理员是 多对一的关系, 直接在查询category关联查询account即可(这样可以解决N+1问题) -->
+  		<association property="account" resultMap="cn.itcast.shop.model.Account.baseResultMap" />
+  </resultMap>
+ 
+  <insert id="insert" parameterType="category">
+  	  insert into category (type,hot) values (#{type},#{hot})
+  </insert>
+  
+  <select id="get" parameterType="int" resultMap="baseResultMap" useCache="true">
+  	   select * from category c where c.c_id=#{param} 
+  </select>
+  
+  <select id="query" resultMap="baseResultMap">
+  	   select * from category 
+  </select>
+  <!--  没有关联查询分页 
+	  <select id="queryForPage" parameterType="map" resultMap="baseResultMap" useCache="true">
+  	   select * from category c where c.type like #{keyword} limit #{start},#{rows}
+  	</select>
+   -->
+   
+    <select id="queryForPage" parameterType="map" resultMap="categoryMap">
+  	   select * from category c left join account a on c.aid=a.a_id where c.type like #{keyword} limit #{start},#{rows}
+  	</select>
+  
+  <select id="queryCount" parameterType="string" resultType="int">
+  	   select count(*) from category c where c.type like #{keyword}
+  </select>
+  
+  <select id="queryByHot" parameterType="boolean" resultType="int">
+  	   select c.c_id from category c where c.hot=#{isHot}
+  </select>
+  
+   <delete id="deleteByIds">
+      delete from category where c_id in  <!-- <c:foreach item-->
+      <foreach collection="array" item="ids" separator="," open="(" close=")" >
+      		#{ids}
+      </foreach>
+  </delete>
+  
+   <update id="update" parameterType="category">
+      <!-- 
+	  	  update category set type=#{type},hot=#{hot} where id=#{id}
+       -->
+       update category
+       <set>
+       	   <if test="type!=null">
+       	   	  type=#{type},
+       	   </if>
+       	   <if test="hot!=null">
+       	   	  hot=#{hot},
+       	   </if>
+       	   <if test="account!=null and account.id!=null">
+       	   	  aid=#{account.id},
+       	   </if>
+       </set>
+       where c_id=#{id}
+  </update>
+  
+</mapper>

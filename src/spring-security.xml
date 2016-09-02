@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bean:beans
+	xmlns:bean="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns="http://www.springframework.org/schema/security"
+	xmlns:p="http://www.springframework.org/schema/p"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans 
+	http://www.springframework.org/schema/beans/spring-beans-3.2.xsd
+	http://www.springframework.org/schema/security 
+	http://www.springframework.org/schema/security/spring-security-3.2.xsd">
+	<!-- 
+		1: web.xml中 配置系统提供的11过滤器,实现权限验证功能
+		2: XML中通过: authentication-manager 配置用户与角色的关系
+		3: XML中通过: http标签,配置角色与权限的关系,和缺省的登陆模式
+		4： 常见的约定(约定优于配置)
+		    4.1: 缺省springSecurityFilterChain名称会加载过滤链
+		    4.2: authentication-manager默认的id名称为: org.springframework.security.authenticationManager 提供给http标签调用
+		5: 实现登陆成功后显示登陆信息： 登陆成功后数据的存储由 : SecurityContextPersistenceFilter实现
+		6: 实现注销功能
+		7: 配置数据源,和相关操作信息,把用户与角色的关系存储到数据库中
+			
+	 -->
+	 <authentication-manager alias="authenticationManager">
+	    <!-- 采用自定义的Service完成 用户与角色的关系查询,取代下面的  user-service -->
+	    <authentication-provider user-service-ref="accountService" />
+	    
+	 	<!-- 支持XML配置用户与角色 
+	 	<authentication-provider>
+	 		<user-service>
+	 			<user name="admin" password="admin" authorities="ROLE_ADMIN"/>
+	 			<user name="user" password="user" authorities="ROLE_USER"/>
+	 		</user-service>
+	 	</authentication-provider>
+	 	-->
+	 </authentication-manager>
+	  
+	 
+	 
+	 <!--use-expressions=true 则角色支持表达式方式, 默认会调用: SecurityExpressionRoot 的方法  --> 
+	 <http use-expressions="true" access-denied-page="/login.jsp?error=access-denied">
+	    <!-- 配置自定义的 FilterSecurityInterceptor(支持数据库)取代系统自带的 FilterSecurityInterceptor(默认支持XML)-->
+	    <custom-filter before="FILTER_SECURITY_INTERCEPTOR" ref="filterSecurityInterceptor"/>
+	    <!-- 配置角色与权限(URL地址)的关系, 如果一个角色需要访问多个URL地址,则采用表达式  
+	        * 仅仅代表当前目录, ** 可以代表当前目录的子目录
+	 	<intercept-url pattern="/admin/**" access="hasAnyRole('ROLE_ADMIN')"/>
+	 	<intercept-url pattern="/user/**" access="hasAnyRole('ROLE_USER','ROLE_ADMIN')"/>
+	 	  -->
+	 	<!-- 启动系统自带的登陆页面 , 默认的登陆地址为: /j_spring_security_check 此页面通过: DefaultLoginPageGeneratingFilter
+	 	               生成,而且参数是可以修改的
+	 	-->
+	    <form-login 
+	      login-page="/login.jsp"
+	      authentication-failure-url="/login.jsp?error=authentication-failure"
+	      default-target-url="/index.jsp"
+	      password-parameter="pass" username-parameter="name" />
+	      <!-- 配置注销标签,将会加载LogoutFilter过滤器,注销的功能此过滤器完成
+	          /j_spring_security_logout 注销地址
+	       -->
+	     <logout logout-url="/j_spring_security_logout" logout-success-url="/login.jsp"/>
+	 </http>
+	 <!--  -->
+	 <debug />
+	 
+	 <!-- 通过用户获取角色集合 -->
+	<bean id="accountService" class="service.impl.AccountServiceImpl">
+		<property name="sessionFactory" ref="sessionFactory" />
+	</bean>
+
+	<!-- 通过URL获取角色集合 -->
+	<bean id="urlService" class="service.impl.UrlServiceImpl">
+		<property name="sessionFactory" ref="sessionFactory" />
+	</bean>
+	<!-- 角色集合的决策器 -->
+	<bean id="decisionManager" class="service.impl.RoleAccessDecisionManager" />
+
+	<!-- 安全验证的过滤器, 对角色进行判断 -->
+	<bean id="filterSecurityInterceptor"
+		class="org.springframework.security.web.access.intercept.FilterSecurityInterceptor">
+		<!-- authenticationManager中有 accountService 通过它可以查询 当前用户的角色集合 -->
+		<property name="authenticationManager" ref="authenticationManager" />
+		<!-- 决策管理器,用来对用户和URL地址的角色信息进行判断 -->
+		<property name="accessDecisionManager" ref="decisionManager" />
+		<!-- 通过url地址,查询当前url可以访问的角色集合 -->
+		<property name="securityMetadataSource" ref="urlService" />
+	</bean>
+	 
+	 
+</bean:beans>

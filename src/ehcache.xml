@@ -1,0 +1,13 @@
+<ehcache>
+    <!-- 配置硬盘缓存的路径, 此路径每个操作系统都不同 -->
+	<diskStore path="java.io.tmpdir"/>
+	
+    <defaultCache
+            maxElementsInMemory="10000"
+            eternal="false"
+            timeToIdleSeconds="60"
+            timeToLiveSeconds="120"
+            overflowToDisk="true"
+            memoryStoreEvictionPolicy="LRU"
+    />
+</ehcache>

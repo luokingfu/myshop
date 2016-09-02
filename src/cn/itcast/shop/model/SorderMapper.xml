@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="cn.itcast.shop.model.Sorder">
+	<resultMap id="baseResultMap" type="sorder">
+		<id column="s_id" property="id" jdbcType="INTEGER" />
+		<result column="s_name" property="name" jdbcType="VARCHAR" />
+		<result column="s_price" property="price" jdbcType="DECIMAL" />
+		<result column="number" property="number" jdbcType="INTEGER" />
+	</resultMap>
+	<insert id="insert" parameterType="sorder">
+		insert into sorder (s_name,s_price,number,pid,fid) values (#{name},#{price},#{number},#{product.id},#{forder.id})
+	</insert>
+	
+	<select id="sole" parameterType="map" resultType="map">
+	   <!-- 
+			select s_name,sum(number) as number from sorder group by pid order by sum(number) desc limit 0,#{number}
+	    -->
+	    select s_name,sum(number) as number from sorder s inner join forder f on s.fid=f.f_id
+	    <where>
+	    	<if test="start!=null">
+	    		and f.date &gt; #{start} 
+	    	</if>
+	    	<if test="end!=null">
+	    		and f.date &lt; #{end} 
+	    	</if>
+	    </where>
+         group by pid order by sum(number) desc limit 0,#{number}
+	</select>
+	
+	
+</mapper>

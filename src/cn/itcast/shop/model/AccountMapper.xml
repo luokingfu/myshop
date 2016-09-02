@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="cn.itcast.shop.model.Account" >
+	  <resultMap id="baseResultMap" type="account" >
+	    <id column="a_id" property="id" jdbcType="INTEGER" />
+	    <result column="login" property="login" jdbcType="VARCHAR" />
+	    <result column="name" property="name" jdbcType="VARCHAR" />
+	    <result column="pass" property="pass" jdbcType="VARCHAR" />
+	  </resultMap>
+	  
+	  <resultMap type="account" id="accountResultMap" extends="baseResultMap">
+	  	 <collection property="roleSet" resultMap="cn.itcast.shop.model.Role.baseResultMap" />
+	  </resultMap>
+	  
+	  <select id="query" resultMap="baseResultMap">
+	  	 select * from account
+	  </select>
+	  <!-- SELECT a FROM Account a JOIN FETCH a.roleSet WHERE a.login=:login -->
+	  <select id="loadUserByUsername" parameterType="string" resultMap="accountResultMap">
+	  	  select * from account a join account_role ar on a.a_id=ar.aid
+	  	  join role r on ar.rid=r.r_id where a.login=#{login} 
+	  </select>
+</mapper>
